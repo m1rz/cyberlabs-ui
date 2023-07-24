@@ -41,32 +41,7 @@
 				<span class="material-icons text-4xl mr-4">monitor</span>
 				<span class="text-2xl pr-4">Active Machines</span>
 			</div>
-			<div v-for="machine in active_machines">
-				<div
-					class="p-3 pl-4 pr-4 bg-[#62B6B7] rounded-lg w-full mb-1 flex flex-row items-center content-between cursor-pointer">
-					<div class="rounded-full mr-4 bg-green-500 invisible md:visible p-2.5 border border-solid-white"></div>
-					<span class="text-lg text-slate-50">{{ machine.name }}</span>
-					<div class="text-slate-50 ml-auto">
-						<span
-							class="text-3xl text-slate-50 ml-auto material-icons transition-all hover:scale-125 hover:text-green-300">play_arrow</span>
-						<span
-							class="text-3xl text-slate-50 ml-auto material-icons transition-all hover:scale-125 hover:text-orange-300">stop</span>
-						<span
-							class="text-3xl text-slate-50 ml-auto material-icons transition-all hover:scale-125 hover:text-red-400">delete</span>
-						<span @click="viewMachine(machine.name)"
-							class="text-3xl text-slate-50 ml-auto material-icons transition-all active:rotate-180">expand_more</span>
-					</div>
-				</div>
-				<div v-if="isViewingMachine == machine.name"
-					class="p-3 pl-4 pr-4 bg-green-300 rounded-lg w-full mb-1 flex flex-col items">
-					<p class="mb-2">{{ machine.desc }}</p>
-					<div
-						class="p-2 pl-4 pr-4 ml-auto text-slate-50 bg-[#62B6B7] inline-flex flex-row rounded-lg items-center cursor-pointer transition-all hover:bg-[#439a97] hover:scale-110">
-						<span class="material-icons text-2xl mr-4">lan</span>
-						<span>Connect...</span>
-					</div>
-				</div>
-			</div>
+			<Machine v-for="machine in active_machines" :machine="machine" :show-controls="true"/>
 		</div>
 	</main>
 </template>
@@ -77,6 +52,7 @@ import { ref, onMounted, computed } from "vue";
 import { reconnect } from "../sock.js";
 import { useStore } from "vuex";
 import CreateMachine from "../components/CreateMachine.vue";
+import Machine from "../components/Machine.vue";
 
 onMounted(function () {
 	//socket.connect()
@@ -97,6 +73,20 @@ const viewMachine = (machine) => {
 	} else {
 		isViewingMachine.value = "";
 	}
+}
+
+const statusLightbinding = (status) => {
+  return { 
+    "visibility": "visible", 
+    "padding": "0.625rem", 
+    "marginRight": "1rem", 
+    "borderRadius": "9999px", 
+    "borderWidth": "1px", 
+    "backgroundColor": status.toLowerCase() === "running" ? "#10B981" : "#EF4444", 
+    "@media (min-width: 768px)": { 
+      "visibility": "visible" 
+    } 
+  };
 }
 
 </script>

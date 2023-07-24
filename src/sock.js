@@ -58,7 +58,6 @@ socket.on("authenticate", () => {
 });
 
 socket.on("confirm_auth", (cred) => {
-    console.log(cred);
     if (cred == "0") {
         socket.disconnect();
     }

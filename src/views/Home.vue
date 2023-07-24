@@ -1,6 +1,6 @@
 <template>
 	<main id="Home-page">
-		<h1 class="text-4xl font-bold">Home</h1>
+		<h1 class="text-4xl font-bold">Welcome, {{ currentUser.username }}</h1>
 		<div class="mt-8 p-4 bg-[#cbedd5] rounded-lg shadow-md">
 			<input v-model="searchText" type="text" class="p-2 rounded-lg w-full" placeholder="Type to search...">
 		</div>
@@ -11,40 +11,8 @@
 					<span class="text-2xl pr-4">Search Results</span>
 				</div>
 				<!-- <span v-if="searchListLength <= 0">Empty</span> -->
-				<div v-for="machine in match_machines">
-					<div
-						class="p-3 pl-4 pr-4 bg-[#62B6B7] rounded-lg w-full mb-1 flex flex-row items content-between cursor-pointer">
-						<span class="text-lg text-slate-50">{{ machine.name }}</span>
-						<span @click="viewMachine(machine.name)"
-							class="text-lg text-slate-50 ml-auto material-icons">expand_more</span>
-					</div>
-					<div v-if="isViewingMachine == machine.name"
-						class="p-3 pl-4 pr-4 bg-green-300 rounded-lg w-full mb-1 flex flex-col items">
-						<p class="mb-2">{{ machine.desc }}</p>
-						<div
-							class="p-2 pl-4 pr-4 ml-auto text-slate-50 bg-[#62B6B7] inline-flex flex-row rounded-lg items-center cursor-pointer transition-all hover:bg-[#439a97] hover:scale-110">
-							<span class="material-icons text-2xl mr-4">lan</span>
-							<span>Connect...</span>
-						</div>
-					</div>
-				</div>
-				<div v-for="template in match_templates">
-					<div
-						class="p-3 pl-4 pr-4 bg-[#62B6B7] rounded-lg w-full mb-1 flex flex-row items content-between cursor-pointer">
-						<span class="text-lg text-slate-50">{{ template.name }}</span>
-						<span @click="viewTemplate(template.name)"
-						class="text-lg text-slate-50 ml-auto material-icons transition active:rotate-180">expand_more</span>
-					</div>
-					<div v-if="isViewing == template.name"
-					class="p-3 pl-4 pr-4 bg-green-300 rounded-lg w-full mb-1 flex flex-col items">
-					<p class="mb-2">{{ template.description }}</p>
-					<div
-						class="p-2 pl-4 pr-4 ml-auto text-slate-50 bg-[#62B6B7] inline-flex flex-row rounded-lg items-center cursor-pointer transition-all hover:bg-[#439a97] hover:scale-110">
-						<span class="material-icons text-2xl mr-4">add</span>
-						<span>Create VM From Template...</span>
-					</div>
-				</div>
-				</div>
+				<Machine v-for="machine in match_machines" :machine="machine" :show-controls="true" />
+				<Template v-for="template in match_templates" :template="template" />
 			</div>
 		</Transition>
 
@@ -56,23 +24,7 @@
 					<span class="material-icons text-4xl mr-4">display_settings</span>
 					<span class="text-2xl pr-4">Recommended Machine Templates</span>
 				</div>
-				<div v-for="template in machine_templates">
-					<div
-						class="p-3 pl-4 pr-4 bg-[#62B6B7] rounded-lg w-full mb-1 flex flex-row items content-between cursor-pointer">
-						<span class="text-lg text-slate-50">{{ template.name }}</span>
-						<span @click="viewTemplate(template.name)"
-							class="text-lg text-slate-50 ml-auto material-icons transition active:rotate-180">expand_more</span>
-					</div>
-					<div v-if="isViewing == template.name"
-						class="p-3 pl-4 pr-4 bg-green-300 rounded-lg w-full mb-1 flex flex-col items">
-						<p class="mb-2">{{ template.desc }}</p>
-						<div
-							class="p-2 pl-4 pr-4 ml-auto text-slate-50 bg-[#62B6B7] inline-flex flex-row rounded-lg items-center cursor-pointer transition-all hover:bg-[#439a97] hover:scale-110">
-							<span class="material-icons text-2xl mr-4">add</span>
-							<span>Create VM From Template...</span>
-						</div>
-					</div>
-				</div>
+				<Template v-for="template in machine_templates" :template="template" />
 			</div>
 
 			<!-- Active Machines -->
@@ -81,24 +33,7 @@
 					<span class="material-icons text-4xl mr-4">monitor</span>
 					<span class="text-2xl pr-4">Active Machines</span>
 				</div>
-				<div v-for="machine in active_machines">
-					<div
-						class="p-3 pl-4 pr-4 bg-[#62B6B7] rounded-lg w-full mb-1 flex flex-row items-center content-between cursor-pointer">
-						<!-- <div class="rounded-full mr-4 bg-green-500"></div> -->
-						<span class="text-lg text-slate-50">{{ machine.name }}</span>
-						<span @click="viewMachine(machine.name)"
-							class="text-lg text-slate-50 ml-auto material-icons">expand_more</span>
-					</div>
-					<div v-if="isViewingMachine == machine.name"
-						class="p-3 pl-4 pr-4 bg-green-300 rounded-lg w-full mb-1 flex flex-col items">
-						<p class="mb-2">{{ machine.desc }}</p>
-						<div
-							class="p-2 pl-4 pr-4 ml-auto text-slate-50 bg-[#62B6B7] inline-flex flex-row rounded-lg items-center cursor-pointer transition-all hover:bg-[#439a97] hover:scale-110">
-							<span class="material-icons text-2xl mr-4">lan</span>
-							<span>Connect...</span>
-						</div>
-					</div>
-				</div>
+				<Machine v-for="machine in active_machines" :machine="machine" />
 			</div>
 		</div>
 
@@ -107,10 +42,13 @@
 
 <script setup>
 
-import { ref, onMounted, computed, watch } from "vue";
+import { ref, onMounted, computed, watch, inject } from "vue";
+import { currentUserSymbol } from "../symbols";
 import { reconnect } from "../sock.js";
 import { useStore } from "vuex";
 import debounce from "lodash.debounce";
+import Template from "../components/Template.vue";
+import Machine from "../components/Machine.vue";
 
 /*onMounted(() => {
 	socket.connect({
@@ -125,34 +63,42 @@ onMounted(function () {
 
 const store = useStore();
 
-const isViewing = ref("");
-const isViewingMachine = ref("");
+const { currentUser } = inject(currentUserSymbol);
 const searchText = ref("");
 const searchLoading = ref(false);
 
 const active_machines = computed(() => store.state.machinesList)
-
 const machine_templates = computed(() => store.state.templatesList)
-
 const match_machines = computed(() => store.state.machinesList.filter(searchQuery));
 const match_templates = computed(() => store.state.templatesList.filter(searchQuery));
 const searchList = computed(() => [].concat(match_machines, match_templates));
 /* const searchListLength = computed(() => Object.values(searchList)[0].length); */
-const viewTemplate = (template) => {
-	if (template !== isViewing.value) {
-		isViewing.value = template;
-	} else {
-		isViewing.value = "";
+
+/* const statusLightSet = (status) => {
+	switch (status.toLowerCase()) {
+		case "running":
+			return "#10B981";
+		case "stopped":
+			return "#EF4444";
+		default:
+			return "#6B7280";
 	}
 };
 
-const viewMachine = (machine) => {
-	if (machine !== isViewingMachine.value) {
-		isViewingMachine.value = machine;
-	} else {
-		isViewingMachine.value = "";
-	}
-}
+const statusLightbinding = (status) => {
+	const bg_color = statusLightSet(status);
+	return {
+		"visibility": "visible",
+		"padding": "0.625rem",
+		"marginRight": "1rem",
+		"borderRadius": "9999px",
+		"borderWidth": "1px",
+		"backgroundColor": bg_color,
+		"@media (min-width: 768px)": {
+			"visibility": "visible"
+		}
+	};
+}; */
 
 const searchQuery = (query) => {
 	const available = [];
@@ -190,6 +136,32 @@ const searchObjects = (searchString) => {
 		searchLoading.value = true;
 		console.log(searchString);
 	}
+}
+
+const connectMachine = (vmid) => {
+/* 	const settings = {
+		method: 'GET',
+		headers: {
+			'Content-Type': 'application/x-www-form-urlencoded',
+			'Access-Control-Allow-Origin': import.meta.env.VITE_API_ENDPOINT,
+			'ngrok-skip-browser-warning': true,
+			'Authorization': 'Bearer ' + localStorage.getItem('usersession')
+		},
+	}
+	fetch(import.meta.env.VITE_API_ENDPOINT + '/connect?vmid=' + vmid, settings)
+		.then(res => res.json())
+		.then(res => {
+			if ('ticket' in res) { */
+				/* window.open(import.meta.env.VITE_API_ENDPOINT + "/proxmox/?console=kvm&novnc=1&vmid=101&vmname=server&node=proxmox&resize=off", '_blank') */
+				/* window.open(import.meta.env.VITE_API_ENDPOINT + "/proxmox/?console=kvm&novnc=1&node=proxmox&resize=1&vmid=" + vmid + "&path=api2/json/nodes/proxmox/qemu/" + vmid + "/vncwebsocket/port/" + res["port"] + "/vncticket/" + res["ticket"], '_blank') */
+				/* window.open(import.meta.env.VITE_API_ENDPOINT + "/vnc.html?autoconnect=1&host=" + import.meta.env.VITE_API_ENDPOINT.split("/").pop() + "&port=" + res['port'] + "&path=" + encodeURIComponent("api2/json/nodes/proxmox/qemu/" + vmid + "/vncwebsocket/port/" + res["port"] + "/vncticket/" + res["ticket"]), '_blank')
+				window.open(import.meta.env.VITE_API_ENDPOINT + '/cookies'); */
+/* 			}
+		})
+		.catch(err => {
+			console.error(err)
+		}) */
+	window.open(import.meta.env.VITE_API_ENDPOINT + '/connect2?vmid=' + vmid + '&username=' + currentUser.value.username, '_blank')
 }
 
 watch(searchList, () => { searchLoading.value = false; })

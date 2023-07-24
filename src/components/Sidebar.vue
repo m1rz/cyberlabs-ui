@@ -54,37 +54,47 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, inject } from 'vue'
+import { currentUserSymbol } from '../symbols';
 import logoURL from '../assets/logo.png'
+import { useRouter } from 'vue-router';
 
-const userData = ref({});
+const {currentUser, updateUser} = inject(currentUserSymbol);
 
 onMounted(() => {
 	const settings = {
 		method: 'GET',
 		headers: {
 			'Content-Type': 'application/x-www-form-urlencoded',
-			'Access-Control-Allow-Origin': '*',
+			'Access-Control-Allow-Origin': import.meta.env.VITE_API_ENDPOINT,
 'ngrok-skip-browser-warning': true,
 			'Authorization': 'Bearer ' + localStorage.getItem('usersession')
 		},
 	}
 	fetch(import.meta.env.VITE_API_ENDPOINT + '/user/', settings)
-		.then(res => res.json())
 		.then(res => {
-			userData.value = res;
-			console.log(userData.value);
+			if (res.status === 422) {
+				router.push({ path: '/logout' });
+				return {};
+			}
+			return res.json();
+		})
+		.then(res => {
+			updateUser(res);
+			console.log(currentUser.value);
 		})
 });
 
-const is_expanded = ref(localStorage.getItem("is_expanded") === "true")
+const router = useRouter();
+
+const is_expanded = ref(localStorage.getItem("is_expanded") === "true");
 
 const ToggleMenu = () => {
 	is_expanded.value = !is_expanded.value
 	localStorage.setItem("is_expanded", is_expanded.value)
-}
+};
 
-const isAdmin = computed(() => userData.value.role == 'admin')
+const isAdmin = computed(() => currentUser.value.role == 'admin');
 
 </script>
 

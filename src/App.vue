@@ -1,12 +1,14 @@
 <template>
 	<div class="app">
 		<!-- Sidebar -->
-		<Sidebar v-if="currentPath != '/login' && currentPath != '/logout'"/>
+		<Sidebar v-if="currentPath != '/login' && currentPath != '/logout'" />
 
 		<Transition>
-			<div v-if="announcements != ''" class="p-4 bg-green-700 fixed top-0 w-full flex flex-row text-center text-white font-semibold text-lg">
+			<div v-if="announcements != ''"
+				class="p-4 bg-green-700 fixed top-0 w-full flex flex-row text-center text-white font-semibold text-lg">
 				<span class="flex-1">{{ announcements }}</span>
-				<span @click="() => store.dispatch('updateAnnouncement', '')" class="material-icons transition-all hover:scale-125">close</span>
+				<span @click="() => store.dispatch('updateAnnouncement', '')"
+					class="material-icons transition-all hover:scale-125">close</span>
 			</div>
 		</Transition>
 
@@ -17,29 +19,25 @@
 
 <script setup>
 import Sidebar from './components/Sidebar.vue';
-import { computed, onMounted, watch } from "vue";
+import { computed, onMounted, provide, ref, watch } from "vue";
 import { useStore } from "vuex";
 import { useRoute } from 'vue-router';
 import { socket, state, setStore } from "./sock.js";
+import { currentUserSymbol } from "./symbols";
 
 const route = useRoute();
 const store = useStore();
-const currentPath = computed( () => route.path );
+const currentPath = computed(() => route.path);
 
 const announcements = computed(() => store.state.announce);
 
+const currentUser = ref({});
+const updateUser = (user) => {
+	currentUser.value = user;
+};
+provide(currentUserSymbol, {currentUser, updateUser});
+
 onMounted(() => {
-	if (currentPath == '/') {
-		const settings = {
-		method: 'GET',
-		headers: {
-			'Access-Control-Allow-Origin': '*',
-'ngrok-skip-browser-warning': true,
-			'ngrok-skip-browser-warning': true,
-		},
-	}
-		fetch();
-	}
 	if (currentPath != '/login' && currentPath != '/logout') {
 		setStore(useStore());
 		socket.connect();
@@ -53,12 +51,12 @@ onMounted(() => {
 watch(currentPath, (to, from) => {
 	if (to !== from) {
 		if (to != '/login' && to != '/logout' && !store.state.connected) {
-		socket.connect();
-	} else if (to === '/logout') {
-		console.log("disconnecting...");
-		console.log(socket);
-		socket.disconnect();
-	}
+			socket.connect();
+		} else if (to === '/logout') {
+			console.log("disconnecting...");
+			console.log(socket);
+			socket.disconnect();
+		}
 	}
 })
 
@@ -118,5 +116,4 @@ button {
 .v-leave-to {
 	opacity: 0;
 }
-
 </style>

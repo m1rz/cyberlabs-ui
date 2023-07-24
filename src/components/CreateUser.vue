@@ -57,7 +57,7 @@ const createUser = () => {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
-            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Origin': import.meta.env.VITE_API_ENDPOINT,
 'ngrok-skip-browser-warning': true,
 			'Authorization': 'Bearer ' + localStorage.getItem('usersession'),
         },

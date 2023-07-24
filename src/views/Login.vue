@@ -43,7 +43,7 @@ const doLogin = () => {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
-            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Origin': import.meta.env.VITE_API_ENDPOINT,
             'ngrok-skip-browser-warning': true,
         },
         body: 'username=' + username.value + '&password=' + password.value,
@@ -68,7 +68,7 @@ const doLogin = () => {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Origin': import.meta.env.VITE_API_ENDPOINT,
                     'ngrok-skip-browser-warning': true,
                     'Authorization': 'Bearer ' + localStorage.getItem('usersession')
                 },
@@ -101,7 +101,7 @@ const doRegister = () => {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
-            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Origin': import.meta.env.VITE_API_ENDPOINT,
             'ngrok-skip-browser-warning': true,
         },
         body: 'username=' + username.value + '&password=' + password.value,

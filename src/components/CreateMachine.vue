@@ -118,7 +118,7 @@ const createMachine = () => {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
-			'Access-Control-Allow-Origin': '*',
+			'Access-Control-Allow-Origin': import.meta.env.VITE_API_ENDPOINT,
 'ngrok-skip-browser-warning': true,
 			'Authorization': 'Bearer ' + localStorage.getItem('usersession'),
 		},

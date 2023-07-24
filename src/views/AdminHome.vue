@@ -13,21 +13,7 @@
         <span class="material-icons text-4xl mr-4">monitor</span>
         <span class="text-2xl pr-4">Active Machines</span>
       </div>
-      <div v-for="machine in active_machines"
-        class="p-3 pl-4 pr-4 bg-[#62B6B7] rounded-lg w-full mb-1 flex flex-row items-center content-between cursor-pointer">
-        <div :style="statusLightbinding(machine.state)"></div>
-        <!-- <div class="rounded-full mr-4 bg-green-500"></div> -->
-        <span class="text-lg text-slate-50">{{ machine.name }}</span>
-        <div class="text-slate-50 ml-auto">
-          <span
-            class="text-3xl text-slate-50 ml-auto material-icons transition-all hover:scale-125 hover:text-green-300">play_arrow</span>
-          <span
-            class="text-3xl text-slate-50 ml-auto material-icons transition-all hover:scale-125 hover:text-orange-300">stop</span>
-          <span
-            class="text-3xl text-slate-50 ml-auto material-icons transition-all hover:scale-125 hover:text-red-400">delete</span>
-          <span class="text-3xl text-slate-50 ml-auto material-icons transition-all active:rotate-180">expand_more</span>
-        </div>
-      </div>
+      <Machine v-for="machine in active_machines" :machine="machine" :show-controls="true"/>
     </div>
 
   </main>
@@ -39,6 +25,7 @@
 import { onMounted, computed, ref } from "vue";
 import { useStore } from "vuex";
 import { reconnect, socket } from "../sock.js";
+import Machine from "../components/Machine.vue";
 
 const store = useStore();
 
@@ -61,7 +48,7 @@ onMounted(() => {
     method: 'GET',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
-      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Origin': import.meta.env.VITE_API_ENDPOINT,
       'ngrok-skip-browser-warning': true,
       'Authorization': 'Bearer ' + localStorage.getItem('usersession'),
     },
